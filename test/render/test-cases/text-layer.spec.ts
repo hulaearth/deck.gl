@@ -6,7 +6,7 @@ import {describe} from 'vitest';
 import {runRenderTestSuite} from '../render-test-suite';
 import type {TestCase} from '../deck-test-utils';
 
-import {COORDINATE_SYSTEM, OrthographicView} from '@deck.gl/core';
+import {COORDINATE_SYSTEM, OrthographicView, _GlobeView as GlobeView} from '@deck.gl/core';
 import {TextLayer, PathLayer} from '@deck.gl/layers';
 import {PathStyleExtension} from '@deck.gl/extensions';
 import {points} from 'deck.gl-test/data';
@@ -206,6 +206,35 @@ const sdfFontRenderer = {
 };
 
 const testCases = [
+  {
+    name: 'text-layer-globe',
+    views: new GlobeView(),
+    viewState: {longitude: 0, latitude: 0, zoom: 1},
+    layers: [false, true].map(
+      contentBox =>
+        new TextLayer({
+          id: `globe-label-${contentBox}`,
+          data: [0],
+          _getFontRenderer: () => fontRenderer,
+          fontFamily: 'Arial',
+          getPosition: () => [contentBox ? 35 : -35, 0],
+          getText: () => 'Globe\nText',
+          getSize: 24,
+          getColor: [255, 255, 255],
+          background: true,
+          backgroundPadding: [8, 6],
+          backgroundBorderRadius: 4,
+          getBackgroundColor: [30, 80, 120],
+          getBorderColor: [0, 160, 255],
+          getBorderWidth: 2,
+          // Content-box dimensions are in meters for geographic coordinates.
+          getContentBox: contentBox ? [-1750000, -1750000, 3500000, 3500000] : [0, 0, -1, -1],
+          parameters: {depthCompare: 'always'}
+        })
+    ),
+    goldenImage: './test/render/golden-images/text-layer-globe.png',
+    imageDiffOptions: {threshold: 0.999}
+  },
   {
     name: 'text-layer',
     viewState: {
